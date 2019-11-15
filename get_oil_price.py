@@ -36,7 +36,6 @@ def parse(text):
     print("文件写入完成！")
 
 if __name__ == "__main__":
-    # url = "http://www.zuihaodaxue.cn/zuihaodaxuepaiming2018.html"
     url = "http://oil.usd-cny.com/"
     text = get_page(url)
     # print(text)
