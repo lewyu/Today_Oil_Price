@@ -7,14 +7,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
+
 sys.setrecursionlimit(99999)
 import time
 from progressbar import *
 
 total = 1000
 
+
 def dosomework():
     time.sleep(0.01)
+
 
 progress = ProgressBar()
 
