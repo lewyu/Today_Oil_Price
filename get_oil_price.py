@@ -8,14 +8,12 @@ from pyquery import PyQuery as pq
 # 引入excel模块
 import openpyxl
 
-
 def get_page(url):
     """发起请求 获得源码"""
     r = requests.get(url)
     r.encoding = 'GBK'
     html = r.text
     return html
-
 
 def parse(text, filepath):
     """解析数据 写入文件"""
@@ -41,7 +39,6 @@ def parse(text, filepath):
             writer.writerow([place, oil92, oil95, oil98, oil00])
 
     print("文件写入完成！")
-
 
 if __name__ == "__main__":
     url = "http://oil.usd-cny.com/"
