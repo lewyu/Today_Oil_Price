@@ -43,9 +43,21 @@ def parse(text, filepath):
     print("文件写入完成！")
 
 
+# def read_excel_xlsx(path, sheet_name):
+#     workbook = openpyxl.load_workbook(path)
+#     # sheet = wb.get_sheet_by_name(sheet_name)这种方式已经弃用，不建议使用
+#     sheet = workbook[sheet_name]
+#     for row in sheet.rows:
+#         for cell in row:
+#             print(cell.value, "\t", end="")
+#         print()
+
+
 if __name__ == "__main__":
     url = "http://oil.usd-cny.com/"
     filepath = 'src/today_oil_price.csv'
+    # sheet_name = 'today_oil_price'
     text = get_page(url)
     # print(text)
     parse(text, filepath)
+    # read_excel_xlsx(filepath, sheet_name)
