@@ -8,6 +8,7 @@ from pyquery import PyQuery as pq
 # 引入excel模块
 import openpyxl
 
+
 def get_page(url):
     """发起请求 获得源码"""
     r = requests.get(url)
@@ -16,10 +17,16 @@ def get_page(url):
     return html
 
 
-def parse(text):
+def parse(text, filepath):
     """解析数据 写入文件"""
     doc = pq(text)
-    # 获得每一行的tr标签
+    # 获取时间,并写入时间
+    times = doc('time')
+    with codecs.open(filepath, 'a', 'utf_8_sig') as f:
+        writer = csv.writer(f, dialect='excel')
+        writer.writerow([times])
+    print(times)
+    # 获取表格 # 获得每一行的tr标签
     tds = doc('table  tr').items()
 
     for td in tds:  # 地区	92号汽油	95号汽油	98号汽油	0号柴油
@@ -29,15 +36,28 @@ def parse(text):
         oil98 = td.find('td:nth-child(4)').text()  # 98号汽油
         oil00 = td.find('td:nth-child(5)').text()  # 0号汽油
 
-        with codecs.open('src/today_oil_price.csv', 'a', 'utf_8_sig') as f:
+        with codecs.open(filepath, 'a', 'utf_8_sig') as f:
             writer = csv.writer(f, dialect='excel')
             writer.writerow([place, oil92, oil95, oil98, oil00])
 
     print("文件写入完成！")
 
+
+# def read_excel_xlsx(path, sheet_name):
+#     workbook = openpyxl.load_workbook(path)
+#     # sheet = wb.get_sheet_by_name(sheet_name)这种方式已经弃用，不建议使用
+#     sheet = workbook[sheet_name]
+#     for row in sheet.rows:
+#         for cell in row:
+#             print(cell.value, "\t", end="")
+#         print()
+
+
 if __name__ == "__main__":
-    # url = "http://www.zuihaodaxue.cn/zuihaodaxuepaiming2018.html"
     url = "http://oil.usd-cny.com/"
+    filepath = 'src/today_oil_price.csv'
+    # sheet_name = 'today_oil_price'
     text = get_page(url)
     # print(text)
-    parse(text)
+    parse(text, filepath)
+    # read_excel_xlsx(filepath, sheet_name)
