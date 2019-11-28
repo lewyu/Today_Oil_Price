@@ -7,6 +7,8 @@ import requests
 from pyquery import PyQuery as pq
 # 引入excel模块
 import openpyxl
+# 引入正则表达式
+import re
 
 
 def get_page(url):
@@ -20,8 +22,16 @@ def get_page(url):
 def parse(text, filepath):
     """解析数据 写入文件"""
     doc = pq(text)
-    # 获取时间,并写入时间
+    # 获取时间,并写入times
     times = doc('time')
+
+    # 正则化时间
+    res = '(?<=").*?(?=")'  # 取双引号内容
+    times = str(times)  # 转string类型
+    li = re.findall(res, times)  # 正则部分
+    li = str(li)  # 转string类型
+    times = li[2:12]  # 取标准日期格式
+
     with codecs.open(filepath, 'a', 'utf_8_sig') as f:
         writer = csv.writer(f, dialect='excel')
         writer.writerow([times])
