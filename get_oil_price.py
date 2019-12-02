@@ -49,6 +49,7 @@ def parse(text, filepath):
         with codecs.open(filepath, 'a', 'utf_8_sig') as f:
             writer = csv.writer(f, dialect='excel')
             writer.writerow([place, oil92, oil95, oil98, oil00])
+            print([place, oil92, oil95, oil98, oil00])
 
     print("文件写入完成！")
 
