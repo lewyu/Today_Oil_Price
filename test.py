@@ -19,4 +19,6 @@ li = re.findall(res,str1)
 print(li)
 result = re.match(pattern, str)
 print(pattern.search(str))
-print(result)
+print("1"==1)
+
+
