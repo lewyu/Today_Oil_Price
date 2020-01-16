@@ -13,4 +13,4 @@ to:
 # add vcode :
    
 ##### generate verification code
-<img src="./img/showvcode.png" width="400">
+<img src="./img/showvcode.png" width="200">
