@@ -10,7 +10,7 @@ to:
 <img src="./img/showforecast.jpg" width="400">
 
 
-# add vcode :
+# Add vcode :
    
 ##### generate verification code
 <img src="./img/showvcode.png" width="400">
