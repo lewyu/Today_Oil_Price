@@ -1,107 +1,61 @@
-from __future__ import print_function
-
-import collections
-import io
-import math
-
+import requests
+import time
 import numpy as np
-import pandas as pd
-import tensorflow as tf
+from captcha.image import ImageCaptcha  # 验证码库
+import matplotlib.pyplot as plt
+from PIL import Image
+import random
 
-# 下载已经转换为tfrecord形式的数据集
-tf.logging.set_verbosity(tf.logging.ERROR)
-train_url = 'https://download.mlcc.google.com/mledu-datasets/sparse-data-embedding/train.tfrecord'
-train_path = tf.keras.utils.get_file(train_url.split('/')[-1], train_url)
-test_url = 'https://download.mlcc.google.com/mledu-datasets/sparse-data-embedding/test.tfrecord'
-test_path = tf.keras.utils.get_file(test_url.split('/')[-1], test_url)
-
-
-def _parse_function(record):
-    """Extracts features and labels.
-  Args:
-    record: File path to a TFRecord file
-  Returns:
-    A `tuple` `(labels, features)`:
-      features: A dict of tensors representing the features
-      labels: A tensor with the corresponding labels.
-  """
-    features = {
-        "terms": tf.VarLenFeature(dtype=tf.string),  # terms are strings of varying lengths
-        "labels": tf.FixedLenFeature(shape=[1], dtype=tf.float32)  # labels are 0 or 1
-    }
-
-    parsed_features = tf.parse_single_example(record, features)
-
-    terms = parsed_features['terms'].values
-    labels = parsed_features['labels']
-
-    return {'terms': terms}, labels
+# 生成验证码文本
+# numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+mumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+           'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+           'w', 'x', 'y', 'z',
+           '', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+           'W', 'X', 'Y', 'Z']
 
 
-# Create an input_fn that parses the tf.Examples from the given files,
-# and split them into features and targets.
-def _input_fn(input_filenames, num_epochs=None, shuffle=True):
-    # Same code as above; create a dataset and map features and labels.
-    ds = tf.data.TFRecordDataset(input_filenames)
-    ds = ds.map(_parse_function)
-
-    if shuffle:
-        ds = ds.shuffle(10000)
-
-    # Our feature data is variable-length, so we pad and batch
-    # each field of the dataset structure to whatever size is necessary.
-    ds = ds.padded_batch(25, ds.output_shapes)
-
-    ds = ds.repeat(num_epochs)
-
-    # Return the next batch of data.
-    features, labels = ds.make_one_shot_iterator().get_next()
-    return features, labels
+def get_vcode_text(char_set=mumbers, size=4):  # char_set为候选集，size为验证码长度
+    vcode_text = []
+    for i in range(size):
+        char = random.choice(char_set)
+        vcode_text.append(char)
+    return vcode_text
 
 
-# 50 informative terms that compose our model vocabulary
-informative_terms = ("bad", "great", "best", "worst", "fun", "beautiful",
-                     "excellent", "poor", "boring", "awful", "terrible",
-                     "definitely", "perfect", "liked", "worse", "waste",
-                     "entertaining", "loved", "unfortunately", "amazing",
-                     "enjoyed", "favorite", "horrible", "brilliant", "highly",
-                     "simple", "annoying", "today", "hilarious", "enjoyable",
-                     "dull", "fantastic", "poorly", "fails", "disappointing",
-                     "disappointment", "not", "him", "her", "good", "time",
-                     "?", ".", "!", "movie", "film", "action", "comedy",
-                     "drama", "family")
+# 生成验证码
+def get_vcode_image():
+    image = ImageCaptcha()
+    vcodetext = get_vcode_text()
+    vcodetext = ''.join(vcodetext)
 
-terms_feature_column = tf.feature_column.categorical_column_with_vocabulary_list(key="terms",
-                                                                                 vocabulary_list=informative_terms)
-terms_embedding_column = tf.feature_column.embedding_column(terms_feature_column, dimension=2)
-feature_columns = [terms_embedding_column]
+    images = image.generate(vcodetext)
+    images = Image.open(images)
+    images = np.array(images)
+    return vcodetext, images
 
-my_optimizer = tf.train.AdagradOptimizer(learning_rate=0.1)
-my_optimizer = tf.contrib.estimator.clip_gradients_by_norm(my_optimizer, 5.0)
 
-classifier = tf.estimator.DNNClassifier(
-    feature_columns=feature_columns,
-    hidden_units=[20, 20],
-    optimizer=my_optimizer
-)
+def get_text(url):
+    """获取金山词霸每日励志精句"""
+    r = requests.get(url)
+    note = r.json()['note']
+    content = r.json()['content']
+    return note, content
 
-classifier.train(
-    input_fn=lambda: _input_fn([train_path]),
-    steps=1000)
 
-evaluation_metrics = classifier.evaluate(
-    input_fn=lambda: _input_fn([train_path]),
-    steps=1000)
-print("Training set metrics:")
-for m in evaluation_metrics:
-    print(m, evaluation_metrics[m])
-print("---")
+def get_vcode_show():
+    # show the vcode image
+    text, image = get_vcode_image()
+    print("验证码：", text)
+    box = plt.figure()
+    ax = box.add_subplot(111)
+    ax.text(0.1, 0.9, text)
+    plt.imshow(image)
+    plt.show()
 
-evaluation_metrics = classifier.evaluate(
-    input_fn=lambda: _input_fn([test_path]),
-    steps=1000)
 
-print("Test set metrics:")
-for m in evaluation_metrics:
-    print(m, evaluation_metrics[m])
-print("---")
+if __name__ == "__main__":
+    myurl = "http://open.iciba.com/dsapi/"
+    print(get_text(myurl), time.ctime())
+
+    get_vcode_show()
